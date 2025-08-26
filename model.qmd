@@ -1,0 +1,115 @@
+---
+format: html
+execute: 
+  echo: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(broom)
+library(pROC)
+
+# Reuse dataset cleaning
+data <- titanic::titanic_train |> 
+  select(Survived, Pclass, Sex, Age) |> 
+  drop_na() |>
+  mutate(
+    Survived = factor(Survived, levels = c(0,1), labels = c("Died","Survived")),
+    Pclass = factor(Pclass),
+    Sex = factor(Sex)
+  )
+
+# Train/test split
+set.seed(123)
+train_idx <- sample(1:nrow(data), size = 0.8 * nrow(data))
+train <- data[train_idx, ]
+test <- data[-train_idx, ]
+
+# Fit logistic regression
+model <- glm(Survived ~ Pclass + Sex + Age, data = train, family = "binomial")
+```
+
+# Model Summary
+
+```{r}
+summary(model)
+```
+The logistic regression model estimates survival probability on the Titanic using passenger class, sex, and age. All predictors are highly significant (p < 0.001). Being in second or third class, being male, and being older are all associated with lower survival odds. The AIC (540.14) suggests a good model fit compared to the null model.
+
+$$
+\text{logit}\big(P(\text{Survived}=1)\big) 
+= \ln \left( \frac{P(\text{Survived}=1)}{1 - P(\text{Survived}=1)} \right) 
+= 3.442 
+- 1.201 \cdot \mathbf{1}_{\{\text{Pclass}=2\}}
+- 2.415 \cdot \mathbf{1}_{\{\text{Pclass}=3\}}
+- 2.440 \cdot \mathbf{1}_{\{\text{Sex}=\text{male}\}}
+- 0.0329 \cdot \text{Age}
+$$
+
+# Odds Ratios and Factor Impact
+
+```{r}
+coeffs <- tidy(model, exponentiate = TRUE, conf.int = TRUE)
+coeffs
+```
+
+```{r}
+ggplot(coeffs, aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high)) +
+  geom_pointrange() +
+  coord_flip() +
+  labs(title = "Impact of Factors on Survival (Odds Ratios)",
+       x = "Factor", y = "Odds Ratio") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red")
+```
+The odds ratios highlight the magnitude of each effect. Compared to first-class passengers, those in second class had only about 30% the odds of survival, while those in third class had less than 10%. Males had dramatically reduced odds of survival (odds ratio ≈ 0.09). Age had a smaller but still meaningful effect: each additional year decreased survival odds by about 3%. The factor impact plot clearly shows that sex and class dominate survival outcomes, with age playing a secondary role.
+
+
+# Predicted Survival Probabilities
+
+```{r}
+newdata <- expand.grid(
+  Pclass = factor(1:3),
+  Sex = factor(c("male","female")),
+  Age = seq(1, 80, by = 1)
+)
+newdata$pred <- predict(model, newdata, type = "response")
+
+ggplot(newdata, aes(x = Age, y = pred, color = Sex)) +
+  geom_line(size = 1) +
+  facet_wrap(~Pclass) +
+  labs(title = "Predicted Survival Probability by Age, Sex, and Class",
+       y = "Predicted Probability")
+```
+The prediction curves show strong interactions between sex, age, and class. Across all classes, women had much higher predicted survival probabilities than men. Younger passengers had better chances, but the survival gap between males and females was consistent: even older women in first class had better odds than younger men in lower classes. This visual confirms the historical accounts of “women and children first” and the importance of class status.
+
+# Model Evaluation
+
+```{r}
+# Predictions
+pred_probs <- predict(model, test, type = "response")
+pred <- ifelse(pred_probs > 0.5, "Survived", "Died") |> 
+  factor(levels = c("Died","Survived"))
+
+# Confusion matrix
+conf_matrix <- table(Predicted = pred, Actual = test$Survived)
+conf_matrix
+
+# Accuracy
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+accuracy
+```
+The model correctly classified most passengers: 71 who died and 47 who survived were predicted correctly, with relatively few misclassifications (17 false negatives and 8 false positives). The overall accuracy was about 82.5%, indicating strong predictive power for a simple model.
+
+# ROC and AUC Curve
+
+```{r}
+roc_obj <- roc(response = test$Survived,
+               predictor = pred_probs,
+               levels = c("Died","Survived"))
+
+plot(roc_obj, col = "blue", lwd = 2, main = "ROC Curve")
+auc(roc_obj)
+```
+The ROC curve demonstrates that the model discriminates well between survivors and non-survivors. The AUC of 0.88 confirms this performance: far better than random guessing (0.5) and in the range considered “very good.” This means the model reliably ranks passengers by their survival probability, even if classification thresholds shift.
