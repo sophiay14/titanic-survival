@@ -1,7 +1,2 @@
 /.quarto/
-.Rhistory
-.RData
-.Rproj.user/
-*.Rproj
-*.csv
-*.rds
+_site

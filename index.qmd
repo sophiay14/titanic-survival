@@ -1,7 +1,8 @@
 ---
 title: "Titanic Survival"
+format: html
 ---
 
-This is a Quarto website.
-
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+This project explores who survived the Titanic using passenger data.  
+We compare **gender, class, and age**, then build a **logistic regression model**.  
+The results highlight how **social and demographic factors shaped survival**.
