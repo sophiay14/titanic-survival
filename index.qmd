@@ -1,8 +1,38 @@
 ---
-title: "Titanic Survival"
+title: "Titanic Survival Odds"
 format: html
+execute: 
+  echo: false
+  warning: false
 ---
 
-This project explores who survived the Titanic using passenger data.  
-We compare **gender, class, and age**, then build a **logistic regression model**.  
-The results highlight how **social and demographic factors shaped survival**.
+```{r}
+#| label: hook-pictogram
+#| fig-cap: "Pictogram showing survival outcomes among Titanic passengers."
+library(tidyverse)
+library(titanic)
+library(waffle)
+
+# Prep dataset
+data <- titanic_train |> 
+  select(Survived) |> 
+  drop_na() |>
+  mutate(Survived = factor(Survived, levels = c(0,1), labels = c("Died","Survived")))
+
+# Count survival outcomes
+counts <- data |> count(Survived)
+
+# Scale to 100 passengers for readability
+props <- round(100 * counts$n / sum(counts$n))
+
+# Build waffle chart
+waffle(
+  parts = setNames(props, counts$Survived),
+  rows = 10, 
+  colors = c("#e74c3c","#27ae60"),
+  title = "Titanic Survival Odds",
+  legend_pos = "bottom"
+)
+```
+
+The sinking of the Titanic was not only a maritime disaster but also a revealing case study of how social structures influenced survival. The data make clear that women and first-class passengers had far greater chances of survival, while men, third-class travelers, and older individuals faced far lower odds. Logistic regression confirms these patterns: men had survival odds reduced by nearly **91% (95% CI: 87%–95%)**, third-class passengers by **91% (95% CI: 84%–95%)**, and each additional year of age lowered survival odds by about **3% (95% CI: 2%–5%)**.

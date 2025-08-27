@@ -31,8 +31,6 @@ test <- data[-train_idx, ]
 model <- glm(Survived ~ Pclass + Sex + Age, data = train, family = "binomial")
 ```
 
-# Model Summary
-
 ```{r}
 summary(model)
 ```
