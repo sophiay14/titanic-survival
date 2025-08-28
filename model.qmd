@@ -2,6 +2,7 @@
 format: html
 execute: 
   echo: false
+  warning: false
 ---
 
 ```{r}
@@ -34,6 +35,7 @@ model <- glm(Survived ~ Pclass + Sex + Age, data = train, family = "binomial")
 ```{r}
 summary(model)
 ```
+
 The logistic regression model estimates survival probability on the Titanic using passenger class, sex, and age. All predictors are highly significant (p < 0.001). Being in second or third class, being male, and being older are all associated with lower survival odds. The AIC (540.14) suggests a good model fit compared to the null model.
 
 $$
@@ -51,9 +53,7 @@ $$
 ```{r}
 coeffs <- tidy(model, exponentiate = TRUE, conf.int = TRUE)
 coeffs
-```
 
-```{r}
 ggplot(coeffs, aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high)) +
   geom_pointrange() +
   coord_flip() +
@@ -107,7 +107,8 @@ roc_obj <- roc(response = test$Survived,
                predictor = pred_probs,
                levels = c("Died","Survived"))
 
-plot(roc_obj, col = "blue", lwd = 2, main = "ROC Curve")
+plot(roc_obj, col = "#003366", lwd = 2, main = "ROC Curve")
 auc(roc_obj)
 ```
+
 The ROC curve demonstrates that the model discriminates well between survivors and non-survivors. The AUC of 0.88 confirms this performance: far better than random guessing (0.5) and in the range considered “very good.” This means the model reliably ranks passengers by their survival probability, even if classification thresholds shift.

@@ -2,6 +2,7 @@
 format: html
 execute: 
   echo: false
+  warning: false
 ---
 
 ```{r}
@@ -30,9 +31,6 @@ test <- data[-train_idx, ]
 # Logistic regression model
 model <- glm(Survived ~ Pclass + Sex + Age, data = train, family = "binomial")
 coeffs <- tidy(model, exponentiate = TRUE, conf.int = TRUE)
-
-# Global theme for clean look
-theme_set(theme_minimal(base_size = 14))
 ```
 
 This report presents an analysis of survival outcomes from the Titanic dataset using logistic regression and data visualization.  
@@ -58,7 +56,6 @@ ggplot(data, aes(x = Pclass, fill = Survived)) +
   labs(y = "Proportion") +
   scale_fill_manual(values = c("#e74c3c","#27ae60")) +
   theme(legend.position = "bottom")
-
 ```
 
 # Gender and Class Interaction
@@ -94,6 +91,7 @@ ggplot(newdata, aes(x = Pclass, y = pred, fill = Sex)) +
 ```{r}
 #| fig-cap: "Observed age distributions and predicted survival probabilities by age."
 # Observed
+# Observed
 ggplot(data, aes(x = Age, fill = Survived)) +
   geom_histogram(bins = 30, alpha = 0.6, position = "identity") +
   labs(title = "Observed Age Distribution by Survival") +
@@ -115,23 +113,4 @@ ggplot(newdata_age, aes(x = Age, y = pred, color = Sex)) +
        y = "Predicted Probability") +
   scale_color_brewer(palette = "Dark2") +
   theme(legend.position = "bottom")
-```
-
-# Age v. Survival
-
-```{r}
-#| fig-cap: "Observed and modeled relationship between age and survival."
-# Observed
-ggplot(data, aes(x = Survived, y = Age, fill = Survived)) +
-  geom_boxplot() +
-  labs(title = "Observed Age Distribution by Survival") +
-  scale_fill_manual(values = c("#e74c3c","#27ae60")) +
-  theme(legend.position = "bottom")
-
-# Logistic curve overlay
-ggplot(data, aes(x = Age, y = as.numeric(Survived)-1)) +
-  geom_jitter(alpha = 0.2, height = 0.05) +
-  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE, color = "#2980b9") +
-  labs(title = "Logistic Curve of Survival by Age",
-       y = "Survival Probability")
 ```

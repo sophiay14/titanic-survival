@@ -7,8 +7,6 @@ execute:
 ---
 
 ```{r}
-#| label: hook-pictogram
-#| fig-cap: "Pictogram showing survival outcomes among Titanic passengers."
 library(tidyverse)
 library(titanic)
 library(waffle)
