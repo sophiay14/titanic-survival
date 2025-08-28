@@ -1,0 +1,25 @@
+/* Make navbar navy blue */
+.navbar {
+    background-color: #003366 !important;
+}
+
+/* Brighten navbar text */
+.navbar .nav-link {
+    color: #ffffff !important; /* Bright white for navbar text */
+}
+
+/* Hover effect for navbar links */
+.navbar .nav-link:hover {
+    color: #e0e0e0 !important; /* Slightly off-white for hover */
+}
+
+/* Active link styling */
+.navbar .nav-link.active {
+    color: #f0e68c !important; /* Bright yellow for active link */
+}
+
+/* Style the website title (Titanic Survival) in the navbar */
+.navbar-brand {
+    color: #ffffff !important; /* Bright white for title */
+    font-weight: bold !important; /* Bold text */
+}
